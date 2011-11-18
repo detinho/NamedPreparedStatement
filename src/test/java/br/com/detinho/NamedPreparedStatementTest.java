@@ -105,5 +105,55 @@ public class NamedPreparedStatementTest {
 		assertEquals(parsedSql, stmt.parsedSql());
 		assertEquals(Arrays.asList(1, 2, 3, 4), stmt.getParameterIndexes("IDS"));
 	}
+	
+	@Test
+	public void useTwoCollectionParameters() {
+		String parsedSql = "SELECT * FROM TABLE_NAME WHERE ID IN (?,?,?,?) OR ID IN (?,?,?)";
+		PreparedStatement stmt = new PreparedStatement(
+				"SELECT * FROM TABLE_NAME WHERE ID IN (:IDS) OR ID IN (:OTHER_IDS)");
+		stmt.setCollection("IDS", Arrays.asList("1", "2", "3", "4"));
+		stmt.setCollection("OTHER_IDS", Arrays.asList("5", "6", "7"));
+		
+		assertEquals(parsedSql, stmt.parsedSql());
+		assertEquals(Arrays.asList(1, 2, 3, 4), stmt.getParameterIndexes("IDS"));
+		assertEquals(Arrays.asList(5, 6, 7), stmt.getParameterIndexes("OTHER_IDS"));
+	}
+	
+	@Test
+	public void useACollectionParameterAndASimpleParameter() {
+		String parsedSql = "SELECT * FROM TABLE_NAME WHERE ID IN (?,?,?,?) AND AGE >= ?";
+		PreparedStatement stmt = new PreparedStatement(
+				"SELECT * FROM TABLE_NAME WHERE ID IN (:IDS) AND AGE >= :AGE");
+		stmt.setCollection("IDS", Arrays.asList("1", "2", "3", "4"));
+		stmt.setInteger("AGE", 10);
+		
+		assertEquals(parsedSql, stmt.parsedSql());
+		assertEquals(Arrays.asList(1, 2, 3, 4), stmt.getParameterIndexes("IDS"));
+		assertEquals(Arrays.asList(5), stmt.getParameterIndexes("AGE"));
+	}
+	
+	@Test
+	public void useASimpleParameterAndACollectionParameter() {
+		String parsedSql = "SELECT * FROM TABLE_NAME WHERE AGE >= ? AND ID IN (?,?,?,?)";
+		PreparedStatement stmt = new PreparedStatement(
+				"SELECT * FROM TABLE_NAME WHERE AGE >= :AGE AND ID IN (:IDS)");
+		stmt.setCollection("IDS", Arrays.asList("1", "2", "3", "4"));
+		stmt.setInteger("AGE", 10);
+		
+		assertEquals(parsedSql, stmt.parsedSql());
+		assertEquals(Arrays.asList(2, 3, 4, 5), stmt.getParameterIndexes("IDS"));
+		assertEquals(Arrays.asList(1), stmt.getParameterIndexes("AGE"));		
+	}
+	
+	@Test
+	public void useTheSameCollectionParameterTwice() {
+		String parsedSql = "SELECT * FROM TABLE_NAME WHERE ID IN (?,?,?,?) OR ID IN (?,?,?,?)";
+		PreparedStatement stmt = new PreparedStatement(
+				"SELECT * FROM TABLE_NAME WHERE ID IN (:IDS) OR ID IN (:IDS)");
+		stmt.setCollection("IDS", Arrays.asList("1", "2", "3", "4"));
+		
+		assertEquals(parsedSql, stmt.parsedSql());
+		assertEquals(Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8), stmt.getParameterIndexes("IDS"));
+	}
 
 }
