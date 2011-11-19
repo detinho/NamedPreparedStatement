@@ -76,14 +76,6 @@ public class PreparedStatementParser {
 				parsedStatement += lastPartOfStatement;
 		}
 	}
-
-	private boolean thereAreNoParameters() {
-		return orderedParameterPositions.isEmpty();
-	}
-	
-	private boolean isValidChar(char ch) {
-		return Character.isJavaIdentifierPart(ch);
-	}
 	
 	private void defineParameterIndexes() {
 		if (thereAreNoParameters()) {
@@ -91,7 +83,7 @@ public class PreparedStatementParser {
 		}
 		
 		int currentStatementIndex = 1;
-
+		
 		for (Position position : orderedParameterPositions) {
 			if (parameters.get(position.getName()) instanceof Collection<?>) {
 				Collection<?> tempCollection = (Collection<?>)parameters.get(position.getName());
@@ -103,6 +95,14 @@ public class PreparedStatementParser {
 				parameterIndexes.put(position.getName(), currentStatementIndex++);
 			}
 		}
+	}
+
+	private boolean thereAreNoParameters() {
+		return orderedParameterPositions.isEmpty();
+	}
+	
+	private boolean isValidChar(char ch) {
+		return Character.isJavaIdentifierPart(ch);
 	}
 
 	private void parseStatement() {
