@@ -6,7 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class PreparedStatementParser {
+public class PreparedStatementFormatter {
 
 	private final String statement;
 	private String parsedStatement = "";
@@ -16,7 +16,7 @@ public class PreparedStatementParser {
 	private List<Position> parameterPositions = new ArrayList<Position>();
 	private MapList<String, Integer> parameterIndexes = new MapList<String, Integer>();
 
-	public PreparedStatementParser(String statement) {
+	public PreparedStatementFormatter(String statement) {
 		this.statement = statement;
 		parseStatement();
 	}
@@ -104,7 +104,7 @@ public class PreparedStatementParser {
 	}
 
 	private void parseStatement() {
-		RealParser parser = new RealParser(statement);
+		StatementParser parser = new StatementParser(statement);
 		parser.parse();
 		
 		parameters = parser.getParametersFound();

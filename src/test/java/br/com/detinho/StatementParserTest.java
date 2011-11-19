@@ -10,11 +10,11 @@ import java.util.Map;
 
 import org.junit.Test;
 
-public class RealParserTest {
+public class StatementParserTest {
 
 	@Test
 	public void noParametersFound() {
-		RealParser parser = new RealParser("SELECT * FROM TBL");
+		StatementParser parser = new StatementParser("SELECT * FROM TBL");
 		parser.parse();
 		
 		Map<String, Object> parametersFound = parser.getParametersFound();
@@ -31,7 +31,7 @@ public class RealParserTest {
 		
 		List<Position> parameterPositions = Arrays.asList(Position.make("ID", 29, 31));
 
-		RealParser parser = new RealParser("SELECT * FROM TBL WHERE ID = :ID");
+		StatementParser parser = new StatementParser("SELECT * FROM TBL WHERE ID = :ID");
 		parser.parse();
 		
 		assertEquals(parametersFound, parser.getParametersFound());
@@ -42,7 +42,7 @@ public class RealParserTest {
 	public void useTheSameParameterTwiceAndCheckParameterPositions() {
 		List<Position> paramList = Arrays.asList(Position.make("", 38, 45), Position.make("", 56, 63), Position.make("", 74, 80));
 
-		RealParser parser = new RealParser("SELECT * FROM TABLE_NAME WHERE COL1 = :PARAM1 OR COL2 = :PARAM2 OR COL3 = :PARAM1");
+		StatementParser parser = new StatementParser("SELECT * FROM TABLE_NAME WHERE COL1 = :PARAM1 OR COL2 = :PARAM2 OR COL3 = :PARAM1");
 		parser.parse();
 		
 		assertEquals(paramList, parser.getParameterPositions());
@@ -51,7 +51,7 @@ public class RealParserTest {
 	@Test
 	public void ignoreAnythingInsideSingleQuotes() {
 		String statement = "SELECT * FROM TBL WHERE NAME = ':NAME'";
-		RealParser parser = new RealParser(statement);
+		StatementParser parser = new StatementParser(statement);
 		parser.parse();
 		
 		assertEquals(Collections.emptyMap(), parser.getParametersFound());
@@ -59,7 +59,7 @@ public class RealParserTest {
 	
 	@Test
 	public void ignoreAnyThingInsideDoubleQuotes() {
-		RealParser parser = new RealParser("SELECT * FROM TBL WHERE NAME = \":NAME\"");
+		StatementParser parser = new StatementParser("SELECT * FROM TBL WHERE NAME = \":NAME\"");
 		parser.parse();
 		
 		assertEquals(Collections.emptyMap(), parser.getParametersFound());
@@ -67,7 +67,7 @@ public class RealParserTest {
 	
 	@Test
 	public void ignoreDoubleQuotesInsideSingleQuotes() {
-		RealParser parser = new RealParser("SELECT * FROM TBL WHERE NAME = \":NAME\"");
+		StatementParser parser = new StatementParser("SELECT * FROM TBL WHERE NAME = \":NAME\"");
 		parser.parse();
 		
 		assertEquals(Collections.emptyMap(), parser.getParametersFound());
@@ -75,7 +75,7 @@ public class RealParserTest {
 	
 	@Test
 	public void ignoreSingleQuotesInsideDoubleQuotes() {
-		RealParser parser = new RealParser("");
+		StatementParser parser = new StatementParser("");
 		parser.parse();
 		
 		assertEquals(Collections.emptyMap(), parser.getParametersFound());
@@ -87,7 +87,7 @@ public class RealParserTest {
 		parametersFound.put("AGE", null);
 		List<Position> positions = Arrays.asList(Position.make("AGE", 46, 49));
 		
-		RealParser parser = new RealParser("SELECT * FROM TBL WHERE NAME = '\"' AND AGE >= :AGE");
+		StatementParser parser = new StatementParser("SELECT * FROM TBL WHERE NAME = '\"' AND AGE >= :AGE");
 		parser.parse();
 
 		assertEquals(parametersFound, parser.getParametersFound());
@@ -100,7 +100,7 @@ public class RealParserTest {
 		parametersFound.put("AGE", null);
 		List<Position> positions = Arrays.asList(Position.make("AGE", 46, 49));
 		
-		RealParser parser = new RealParser("SELECT * FROM TBL WHERE NAME = \"'\" AND AGE >= :AGE");
+		StatementParser parser = new StatementParser("SELECT * FROM TBL WHERE NAME = \"'\" AND AGE >= :AGE");
 		parser.parse();
 
 		assertEquals(parametersFound, parser.getParametersFound());
@@ -113,7 +113,7 @@ public class RealParserTest {
 		parametersFound.put("AGE", null);
 		List<Position> positions = Arrays.asList(Position.make("AGE", 30, 34));
 		
-		RealParser parser = new RealParser("SELECT * FROM TBL WHERE AGE = :AGE AND NAME = 'TEST");
+		StatementParser parser = new StatementParser("SELECT * FROM TBL WHERE AGE = :AGE AND NAME = 'TEST");
 		parser.parse();
 
 		assertEquals(parametersFound, parser.getParametersFound());
@@ -126,7 +126,7 @@ public class RealParserTest {
 		parametersFound.put("AGE", null);
 		List<Position> positions = Arrays.asList(Position.make("AGE", 30, 34));
 		
-		RealParser parser = new RealParser("SELECT * FROM TBL WHERE AGE = :AGE AND NAME = \"TEST");
+		StatementParser parser = new StatementParser("SELECT * FROM TBL WHERE AGE = :AGE AND NAME = \"TEST");
 		parser.parse();
 
 		assertEquals(parametersFound, parser.getParametersFound());

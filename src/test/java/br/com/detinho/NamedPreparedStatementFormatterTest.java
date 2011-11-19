@@ -7,17 +7,17 @@ import java.util.Collections;
 
 import org.junit.Test;
 
-public class NamedPreparedStatementParserTest {
+public class NamedPreparedStatementFormatterTest {
 
 	@Test
 	public void createANewNamedPreparedStatement() {
-		new PreparedStatementParser("SELECT * FROM TABLE_NAME");
+		new PreparedStatementFormatter("SELECT * FROM TABLE_NAME");
 	}
 	
 	@Test
 	public void checkTheParsedSqlWithoutParameters() {
 		String sql = "SELECT * FROM TABLE_NAME";
-		PreparedStatementParser stmt = new PreparedStatementParser(sql);
+		PreparedStatementFormatter stmt = new PreparedStatementFormatter(sql);
 
 		stmt.parse();
 		assertEquals(sql, stmt.parsedSql());
@@ -25,7 +25,7 @@ public class NamedPreparedStatementParserTest {
 	
 	@Test(expected=IllegalStateException.class)
 	public void beforeFormatTheFinalStatementCheckIfAllParametersAreSet() {
-		PreparedStatementParser stmt = new PreparedStatementParser(
+		PreparedStatementFormatter stmt = new PreparedStatementFormatter(
 				"SELECT * FROM TABLE_NAME WHERE ID = :ID");
 		stmt.parse();
 		stmt.parsedSql();		
@@ -34,7 +34,7 @@ public class NamedPreparedStatementParserTest {
 	@Test
 	public void createANewNamedPreparedStatementASingleParameter() {
 		String parsedSql = "SELECT * FROM TABLE_NAME WHERE ID = ?";
-		PreparedStatementParser stmt = new PreparedStatementParser(
+		PreparedStatementFormatter stmt = new PreparedStatementFormatter(
 				"SELECT * FROM TABLE_NAME WHERE ID = :ID");
 		stmt.setInteger("ID", 1);
 
@@ -45,7 +45,7 @@ public class NamedPreparedStatementParserTest {
 	@Test
 	public void createANamedPreparedStatementWithTwoParameters() {
 		String parsedSql = "SELECT * FROM TABLE_NAME WHERE ID = ? OR NAME = ?";
-		PreparedStatementParser stmt = new PreparedStatementParser(
+		PreparedStatementFormatter stmt = new PreparedStatementFormatter(
 				"SELECT * FROM TABLE_NAME WHERE ID = :ID OR NAME = :NAME");
 		
 		stmt.setInteger("ID", 1);
@@ -57,7 +57,7 @@ public class NamedPreparedStatementParserTest {
 
 	@Test
 	public void setTheNamedParameter() {
-		PreparedStatementParser stmt = new PreparedStatementParser(
+		PreparedStatementFormatter stmt = new PreparedStatementFormatter(
 				"SELECT * FROM TABLE_NAME WHERE ID = :ID");
 		
 		stmt.setInteger("ID", 1);
@@ -67,7 +67,7 @@ public class NamedPreparedStatementParserTest {
 
 	@Test
 	public void setTwoNamedParameters() {
-		PreparedStatementParser stmt = new PreparedStatementParser(
+		PreparedStatementFormatter stmt = new PreparedStatementFormatter(
 				"SELECT * FROM TABLE_NAME WHERE ID = :ID OR  NAME = :NAME");
 		stmt.setInteger("ID", 1);
 		stmt.setString("NAME", "Marcos");
@@ -80,7 +80,7 @@ public class NamedPreparedStatementParserTest {
 	public void useTheSameParameterTwice() {
 		String parsedSql = "SELECT * FROM TABLE_NAME WHERE COL1 = ? OR COL2 = ? OR COL3 = ?";
 
-		PreparedStatementParser stmt = new PreparedStatementParser(
+		PreparedStatementFormatter stmt = new PreparedStatementFormatter(
 				"SELECT * FROM TABLE_NAME WHERE COL1 = :PARAM1 OR COL2 = :PARAM2 OR COL3 = :PARAM1");
 		
 		stmt.setInteger("PARAM1", 1);
@@ -92,7 +92,7 @@ public class NamedPreparedStatementParserTest {
 	
 	@Test
 	public void verifyTheIndexesOfTheSimpleParameters() {
-		PreparedStatementParser stmt = new PreparedStatementParser(
+		PreparedStatementFormatter stmt = new PreparedStatementFormatter(
 				"SELECT * FROM TABLE_NAME WHERE COL1 = :PARAM1 OR COL2 = :PARAM2 OR COL3 = :PARAM1");
 		
 		stmt.setInteger("PARAM1", 1);
@@ -107,7 +107,7 @@ public class NamedPreparedStatementParserTest {
 	@Test
 	public void useACollectionParameter() {
 		String parsedSql = "SELECT * FROM TABLE_NAME WHERE ID IN (?,?,?,?)";
-		PreparedStatementParser stmt = new PreparedStatementParser(
+		PreparedStatementFormatter stmt = new PreparedStatementFormatter(
 				"SELECT * FROM TABLE_NAME WHERE ID IN (:IDS)");
 		stmt.setCollection("IDS", Arrays.asList("1", "2", "3", "4"));
 		stmt.parse();
@@ -119,7 +119,7 @@ public class NamedPreparedStatementParserTest {
 	@Test
 	public void useTwoCollectionParameters() {
 		String parsedSql = "SELECT * FROM TABLE_NAME WHERE ID IN (?,?,?,?) OR ID IN (?,?,?)";
-		PreparedStatementParser stmt = new PreparedStatementParser(
+		PreparedStatementFormatter stmt = new PreparedStatementFormatter(
 				"SELECT * FROM TABLE_NAME WHERE ID IN (:IDS) OR ID IN (:OTHER_IDS)");
 		stmt.setCollection("IDS", Arrays.asList("1", "2", "3", "4"));
 		stmt.setCollection("OTHER_IDS", Arrays.asList("5", "6", "7"));
@@ -133,7 +133,7 @@ public class NamedPreparedStatementParserTest {
 	@Test
 	public void useACollectionParameterAndASimpleParameter() {
 		String parsedSql = "SELECT * FROM TABLE_NAME WHERE ID IN (?,?,?,?) AND AGE >= ?";
-		PreparedStatementParser stmt = new PreparedStatementParser(
+		PreparedStatementFormatter stmt = new PreparedStatementFormatter(
 				"SELECT * FROM TABLE_NAME WHERE ID IN (:IDS) AND AGE >= :AGE");
 		stmt.setCollection("IDS", Arrays.asList("1", "2", "3", "4"));
 		stmt.setInteger("AGE", 10);
@@ -147,7 +147,7 @@ public class NamedPreparedStatementParserTest {
 	@Test
 	public void useASimpleParameterAndACollectionParameter() {
 		String parsedSql = "SELECT * FROM TABLE_NAME WHERE AGE >= ? AND ID IN (?,?,?,?)";
-		PreparedStatementParser stmt = new PreparedStatementParser(
+		PreparedStatementFormatter stmt = new PreparedStatementFormatter(
 				"SELECT * FROM TABLE_NAME WHERE AGE >= :AGE AND ID IN (:IDS)");
 		stmt.setCollection("IDS", Arrays.asList("1", "2", "3", "4"));
 		stmt.setInteger("AGE", 10);
@@ -161,7 +161,7 @@ public class NamedPreparedStatementParserTest {
 	@Test
 	public void useTheSameCollectionParameterTwice() {
 		String parsedSql = "SELECT * FROM TABLE_NAME WHERE ID IN (?,?,?,?) OR ID IN (?,?,?,?)";
-		PreparedStatementParser stmt = new PreparedStatementParser(
+		PreparedStatementFormatter stmt = new PreparedStatementFormatter(
 				"SELECT * FROM TABLE_NAME WHERE ID IN (:IDS) OR ID IN (:IDS)");
 		stmt.setCollection("IDS", Arrays.asList("1", "2", "3", "4"));
 		stmt.parse();
@@ -172,7 +172,7 @@ public class NamedPreparedStatementParserTest {
 
 	@Test(expected=IllegalArgumentException.class)
 	public void checkIfAParameterExistsBeforeSet() {
-		PreparedStatementParser stmt = new PreparedStatementParser("SELECT * FROM TBL");
+		PreparedStatementFormatter stmt = new PreparedStatementFormatter("SELECT * FROM TBL");
 		stmt.setCollection("ANYTHING", Collections.emptyList());
 	}
 }

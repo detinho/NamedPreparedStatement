@@ -5,17 +5,31 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import br.com.detinho.PreparedStatementParser.STATES;
+import br.com.detinho.PreparedStatementFormatter.STATES;
 
-public class RealParser {
+public class StatementParser {
 
 	private final String statement;
 	
 	private Map<String, Object> parameters = new HashMap<String, Object>();
 	private List<Position> parameterPositions = new ArrayList<Position>();
 
-	public RealParser(String statement) {
+	private int actualIndex;
+	private int startPosition;
+	private int endPosition;
+	private STATES state;
+
+	public StatementParser(String statement) {
 		this.statement = statement;
+		
+		actualIndex = 0;
+		resetStateToNormal();
+	}
+
+	private void resetStateToNormal() {
+		startPosition = -1;
+		endPosition = -1;
+		state = STATES.NORMAL;
 	}
 
 	public Map<String, Object> getParametersFound() {
@@ -27,13 +41,6 @@ public class RealParser {
 	}
 
 	public void parse() {
-		int actualIndex = 0;
-		
-		int startPosition = -1;
-		int endPosition = -1;
-		
-		STATES state = STATES.NORMAL;
-		
 		String parameterName = "";
 		while (actualIndex < statement.length()) {
 			final char actualChar = statement.charAt(actualIndex);
@@ -42,37 +49,52 @@ public class RealParser {
 				if (isValidChar(actualChar))
 					parameterName += actualChar;
 				
-				if (!(isValidChar(actualChar)) || actualIndex == statement.length()-1) {
+				if (!(isValidChar(actualChar)) || lastChar()) {
 					parameterName = parameterName.trim();
 					
 					endPosition = actualIndex;
 					parameters.put(parameterName, null);
 					putPosition(parameterName, startPosition, endPosition);
-					state = STATES.NORMAL;
-					parameterName = "";
 					
-					startPosition = -1;
-					endPosition = -1;
+					parameterName = "";
+					resetStateToNormal();
 				}
-			} else if (actualChar == ':') {
-				if (state == STATES.NORMAL) {
-					state = STATES.PARAMETER;
-					startPosition = actualIndex;
-				}
-			} else if (actualChar == '\'' && state != STATES.DOUBLE_QUOTE) {
-				if (state == STATES.SINGLE_QUOTE)
-					state = STATES.NORMAL;
-				else
-					state = STATES.SINGLE_QUOTE;
-			} else if (actualChar == '\"' && state != STATES.SINGLE_QUOTE) {
-				if (state == STATES.DOUBLE_QUOTE)
-					state = STATES.NORMAL;
-				else
-					state = STATES.DOUBLE_QUOTE;				
-			}
+			} else if (actualChar == ':')
+				mayChangeToParameterState();
+			
+			else if (actualChar == '\'' && state != STATES.DOUBLE_QUOTE)
+				mayChangeToSingleQuoteState();
+			
+			else if (actualChar == '\"' && state != STATES.SINGLE_QUOTE)
+				mayChangeToDoubleQuoteState();				
 			
 			actualIndex++;
 		}		
+	}
+	
+	private void mayChangeToParameterState() {
+		if (state == STATES.NORMAL) {
+			state = STATES.PARAMETER;
+			startPosition = actualIndex;
+		}
+	}
+	
+	private void mayChangeToSingleQuoteState() {
+		if (state == STATES.SINGLE_QUOTE)
+			state = STATES.NORMAL;
+		else
+			state = STATES.SINGLE_QUOTE;
+	}
+
+	private void mayChangeToDoubleQuoteState() {
+		if (state == STATES.DOUBLE_QUOTE)
+			state = STATES.NORMAL;
+		else
+			state = STATES.DOUBLE_QUOTE;
+	}
+
+	private boolean lastChar() {
+		return actualIndex == statement.length()-1;
 	}
 	
 	private boolean isValidChar(char ch) {
