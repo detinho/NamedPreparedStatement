@@ -80,8 +80,6 @@ public class NamedPreparedStatementParserTest {
 	@Test
 	public void useTheSameParameterTwice() {
 		String parsedSql = "SELECT * FROM TABLE_NAME WHERE COL1 = ? OR COL2 = ? OR COL3 = ?";
-		List<Position> param1PairList = Arrays.asList(Position.make("", 38, 45), Position.make("", 74, 80));
-		List<Position> param2PairList = Arrays.asList(Position.make("", 56, 63));
 
 		PreparedStatementParser stmt = new PreparedStatementParser(
 				"SELECT * FROM TABLE_NAME WHERE COL1 = :PARAM1 OR COL2 = :PARAM2 OR COL3 = :PARAM1");
@@ -90,9 +88,21 @@ public class NamedPreparedStatementParserTest {
 		stmt.setString("PARAM2", "Marcos");
 		stmt.parse();
 		
-		assertEquals(param1PairList, stmt.getParameterPositions("PARAM1"));
-		assertEquals(param2PairList, stmt.getParameterPositions("PARAM2"));
 		assertEquals(parsedSql, stmt.parsedSql());
+	}
+	
+	@Test
+	public void useTheSameParameterTwiceAndCheckParameterPositions() {
+		List<Position> paramList = Arrays.asList(Position.make("", 38, 45), Position.make("", 56, 63), Position.make("", 74, 80));
+
+		PreparedStatementParser stmt = new PreparedStatementParser(
+				"SELECT * FROM TABLE_NAME WHERE COL1 = :PARAM1 OR COL2 = :PARAM2 OR COL3 = :PARAM1");
+		
+		stmt.setInteger("PARAM1", 1);
+		stmt.setString("PARAM2", "Marcos");
+		stmt.parse();
+		
+		assertEquals(paramList, stmt.getParameterPositions());
 	}
 	
 	@Test

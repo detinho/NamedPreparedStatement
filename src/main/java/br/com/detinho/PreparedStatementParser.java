@@ -12,10 +12,8 @@ public class PreparedStatementParser {
 	private String parsedStatement = "";
 
 	enum STATES {NORMAL, PARAMETER, SINGLE_QUOTE, DOUBLE_QUOTE};
-	private STATES state;
 	private Map<String, Object> parameters = new HashMap<String, Object>();
-	private MapList<String, Position> parameterPositions = new MapList<String, Position>();
-	private List<Position> orderedParameterPositions = new ArrayList<Position>();
+	private List<Position> parameterPositions = new ArrayList<Position>();
 	private MapList<String, Integer> parameterIndexes = new MapList<String, Integer>();
 
 	public PreparedStatementParser(String statement) {
@@ -27,12 +25,12 @@ public class PreparedStatementParser {
 		return parsedStatement;
 	}
 	
-	public List<Position> getParameterPositions(String parameterName) {
-		return parameterPositions.get(parameterName);
-	}
-	
 	public List<Integer> getParameterIndexes(String parameterName) {
 		return parameterIndexes.get(parameterName);
+	}
+	
+	public List<Position> getParameterPositions() {
+		return parameterPositions;
 	}
 	
 	public void parse() {
@@ -58,7 +56,7 @@ public class PreparedStatementParser {
 		int startIndex = 0;
 		int lastPositionEnd = -1;
 		
-		for (Position position : orderedParameterPositions) {
+		for (Position position : parameterPositions) {
 			parsedStatement += statement.substring(startIndex, position.getStart());
 			if (parameters.get(position.getName()) instanceof Collection<?>) {
 				Collection<?> tempCollection = (Collection<?>)parameters.get(position.getName());
@@ -84,7 +82,7 @@ public class PreparedStatementParser {
 		
 		int currentStatementIndex = 1;
 		
-		for (Position position : orderedParameterPositions) {
+		for (Position position : parameterPositions) {
 			if (parameters.get(position.getName()) instanceof Collection<?>) {
 				Collection<?> tempCollection = (Collection<?>)parameters.get(position.getName());
 				
@@ -98,7 +96,7 @@ public class PreparedStatementParser {
 	}
 
 	private boolean thereAreNoParameters() {
-		return orderedParameterPositions.isEmpty();
+		return parameterPositions.isEmpty();
 	}
 	
 	private boolean isValidChar(char ch) {
@@ -111,7 +109,7 @@ public class PreparedStatementParser {
 		int startPosition = -1;
 		int endPosition = -1;
 		
-		state = STATES.NORMAL;
+		STATES state = STATES.NORMAL;
 		
 		String parameterName = "";
 		while (actualIndex < statement.length()) {
@@ -160,9 +158,7 @@ public class PreparedStatementParser {
 	private void putPosition(String parameterName, int startPosition,
 			int endPosition) {
 		Position position = Position.make(parameterName, startPosition, endPosition);
-
-		parameterPositions.put(parameterName, position);
-		orderedParameterPositions.add(position);
+		parameterPositions.add(position);
 	}
 
 	public void setInteger(String parameter, Integer value) {
