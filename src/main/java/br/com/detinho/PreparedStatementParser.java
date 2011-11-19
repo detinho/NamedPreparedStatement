@@ -14,9 +14,9 @@ public class PreparedStatementParser {
 	enum STATES {NORMAL, PARAMETER, SINGLE_QUOTE, DOUBLE_QUOTE};
 	private STATES state;
 	private Map<String, Object> parameters = new HashMap<String, Object>();
-	private Map<String, List<Position>> parameterPositions = new HashMap<String, List<Position>>();
+	private MapList<String, Position> parameterPositions = new MapList<String, Position>();
 	private List<Position> orderedParameterPositions = new ArrayList<Position>();
-	private Map<String, List<Integer>> parameterIndexes = new HashMap<String, List<Integer>>();
+	private MapList<String, Integer> parameterIndexes = new MapList<String, Integer>();
 
 	public PreparedStatementParser(String statement) {
 		this.statement = statement;
@@ -53,11 +53,11 @@ public class PreparedStatementParser {
 				parsedStatement += repeatWithCommas("?", tempCollection.size());
 				
 				for (int i = 0; i < tempCollection.size(); i++)
-					putParameterIndex(position.getName(), currentStatementIndex++);
+					parameterIndexes.put(position.getName(), currentStatementIndex++);
 				
 			} else {
 				parsedStatement += "?";
-				putParameterIndex(position.getName(), currentStatementIndex++);
+				parameterIndexes.put(position.getName(), currentStatementIndex++);
 			}
 			startIndex = position.getEnd();
 			lastPositionEnd = position.getEnd();
@@ -68,15 +68,6 @@ public class PreparedStatementParser {
 			if (!lastPartOfStatement.isEmpty() && !Character.isJavaIdentifierPart(lastPartOfStatement.charAt(0)))
 				parsedStatement += lastPartOfStatement;
 		}
-	}
-
-	private void putParameterIndex(String parameterName, int currentStatementIndex) {
-		List<Integer> ilist = parameterIndexes.get(parameterName);
-		if (ilist == null) {
-			ilist = new ArrayList<Integer>();
-			parameterIndexes.put(parameterName, ilist);
-		}
-		ilist.add(currentStatementIndex);
 	}
 
 	public void parseStatement() {
@@ -133,16 +124,10 @@ public class PreparedStatementParser {
 	
 	private void putPosition(String parameterName, int startPosition,
 			int endPosition) {
-		List<Position> plist = parameterPositions.get(parameterName);
-		if (plist == null) {
-			plist = new ArrayList<Position>();
-			parameterPositions.put(parameterName, plist);
-		}
 		Position position = Position.make(parameterName, startPosition, endPosition);
-		
-		plist.add(position);
+
+		parameterPositions.put(parameterName, position);
 		orderedParameterPositions.add(position);
-		
 	}
 
 	public void setInteger(String parameter, Integer value) {
