@@ -4,7 +4,6 @@ import static org.junit.Assert.assertEquals;
 
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
 
 import org.junit.Test;
 
@@ -92,20 +91,6 @@ public class NamedPreparedStatementParserTest {
 	}
 	
 	@Test
-	public void useTheSameParameterTwiceAndCheckParameterPositions() {
-		List<Position> paramList = Arrays.asList(Position.make("", 38, 45), Position.make("", 56, 63), Position.make("", 74, 80));
-
-		PreparedStatementParser stmt = new PreparedStatementParser(
-				"SELECT * FROM TABLE_NAME WHERE COL1 = :PARAM1 OR COL2 = :PARAM2 OR COL3 = :PARAM1");
-		
-		stmt.setInteger("PARAM1", 1);
-		stmt.setString("PARAM2", "Marcos");
-		stmt.parse();
-		
-		assertEquals(paramList, stmt.getParameterPositions());
-	}
-	
-	@Test
 	public void verifyTheIndexesOfTheSimpleParameters() {
 		PreparedStatementParser stmt = new PreparedStatementParser(
 				"SELECT * FROM TABLE_NAME WHERE COL1 = :PARAM1 OR COL2 = :PARAM2 OR COL3 = :PARAM1");
@@ -189,77 +174,5 @@ public class NamedPreparedStatementParserTest {
 	public void checkIfAParameterExistsBeforeSet() {
 		PreparedStatementParser stmt = new PreparedStatementParser("SELECT * FROM TBL");
 		stmt.setCollection("ANYTHING", Collections.emptyList());
-	}
-	
-	@Test(expected=IllegalArgumentException.class)
-	public void ignoreAnythingInsideSingleQuotes() {
-		PreparedStatementParser stmt = new PreparedStatementParser("SELECT * FROM TBL WHERE NAME = ':NAME'");
-		stmt.setString("NAME", "VALUE");
-	}
-	
-	@Test(expected=IllegalArgumentException.class)
-	public void ignoreAnyThingInsideDoubleQuotes() {
-		PreparedStatementParser stmt = new PreparedStatementParser("SELECT * FROM TBL WHERE NAME = \":NAME\"");
-		stmt.setString("NAME", "VALUE");		
-	}
-	
-	@Test(expected=IllegalArgumentException.class)
-	public void ignoreDoubleQuotesInsideSingleQuotes() {
-		String sql = "SELECT * FROM TBL WHERE NAME = '\"'";
-		PreparedStatementParser stmt = new PreparedStatementParser(sql);
-		
-		stmt.setString("NAME", "VALUE");
-	}
-	
-	@Test(expected=IllegalArgumentException.class)
-	public void ignoreSingleQuotesInsideDoubleQuotes() {
-		String sql = "SELECT * FROM TBL WHERE NAME = \"'\"";
-		PreparedStatementParser stmt = new PreparedStatementParser(sql);
-		
-		stmt.setString("NAME", "VALUE");
-	}
-	
-	@Test
-	public void ignoreDoubleQuotesInsideSingleQuotesAndCheckTheFinalSql() {
-		String parsedSql = "SELECT * FROM TBL WHERE NAME = '\"' AND AGE >= ?";
-		PreparedStatementParser stmt = 
-				new PreparedStatementParser("SELECT * FROM TBL WHERE NAME = '\"' AND AGE >= :AGE");
-		stmt.setInteger("AGE", 10);
-		stmt.parse();
-		
-		assertEquals(parsedSql, stmt.parsedSql());
-	}
-	
-	@Test
-	public void ignoreSingleQuotesInsideDoubleQuotesAndCheckTheFinalSql() {
-		String parsedSql = "SELECT * FROM TBL WHERE NAME = \"'\" AND AGE >= ?";
-		PreparedStatementParser stmt = 
-				new PreparedStatementParser("SELECT * FROM TBL WHERE NAME = \"'\" AND AGE >= :AGE");
-		stmt.setInteger("AGE", 10);
-		stmt.parse();		
-		
-		assertEquals(parsedSql, stmt.parsedSql());
-	}
-	
-	@Test
-	public void verifyTheUnterminatedSingleQuoteCaseParameterFirst() {
-		String parsedSql = "SELECT * FROM TBL WHERE AGE = ? AND NAME = 'TEST";
-		PreparedStatementParser stmt = 
-				new PreparedStatementParser("SELECT * FROM TBL WHERE AGE = :AGE AND NAME = 'TEST");
-		stmt.setInteger("AGE", 10);
-		
-		stmt.parse();
-		assertEquals(parsedSql, stmt.parsedSql());
-	}
-	
-	@Test
-	public void verifyTheUnterminatedDoubleQuoteCaseParameterFirst() {
-		String parsedSql = "SELECT * FROM TBL WHERE AGE = ? AND NAME = \"TEST";
-		PreparedStatementParser stmt = 
-				new PreparedStatementParser("SELECT * FROM TBL WHERE AGE = :AGE AND NAME = \"TEST");
-		stmt.setInteger("AGE", 10);
-		
-		stmt.parse();		
-		assertEquals(parsedSql, stmt.parsedSql());
 	}
 }

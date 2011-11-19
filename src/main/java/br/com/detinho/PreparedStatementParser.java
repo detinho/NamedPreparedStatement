@@ -104,61 +104,11 @@ public class PreparedStatementParser {
 	}
 
 	private void parseStatement() {
-		int actualIndex = 0;
+		RealParser parser = new RealParser(statement);
+		parser.parse();
 		
-		int startPosition = -1;
-		int endPosition = -1;
-		
-		STATES state = STATES.NORMAL;
-		
-		String parameterName = "";
-		while (actualIndex < statement.length()) {
-			final char actualChar = statement.charAt(actualIndex);
-						
-			if (state == STATES.PARAMETER) {
-				if (isValidChar(actualChar))
-					parameterName += actualChar;
-				
-				if (!(isValidChar(actualChar)) || actualIndex == statement.length()-1) {
-					parameterName = parameterName.trim();
-					
-					if (!parameterName.endsWith(String.valueOf(actualChar)))
-						parsedStatement += actualChar;
-
-					endPosition = actualIndex;
-					parameters.put(parameterName, null);
-					putPosition(parameterName, startPosition, endPosition);
-					state = STATES.NORMAL;
-					parameterName = "";
-					
-					startPosition = -1;
-					endPosition = -1;
-				}
-			} else if (actualChar == ':') {
-				if (state == STATES.NORMAL) {
-					state = STATES.PARAMETER;
-					startPosition = actualIndex;
-				}
-			} else if (actualChar == '\'' && state != STATES.DOUBLE_QUOTE) {
-				if (state == STATES.SINGLE_QUOTE)
-					state = STATES.NORMAL;
-				else
-					state = STATES.SINGLE_QUOTE;
-			} else if (actualChar == '\"' && state != STATES.SINGLE_QUOTE) {
-				if (state == STATES.DOUBLE_QUOTE)
-					state = STATES.NORMAL;
-				else
-					state = STATES.DOUBLE_QUOTE;				
-			}
-			
-			actualIndex++;
-		}
-	}
-	
-	private void putPosition(String parameterName, int startPosition,
-			int endPosition) {
-		Position position = Position.make(parameterName, startPosition, endPosition);
-		parameterPositions.add(position);
+		parameters = parser.getParametersFound();
+		parameterPositions = parser.getParameterPositions();
 	}
 
 	public void setInteger(String parameter, Integer value) {
