@@ -19,7 +19,8 @@ public class NamedPreparedStatementParserTest {
 	public void checkTheParsedSqlWithoutParameters() {
 		String sql = "SELECT * FROM TABLE_NAME";
 		PreparedStatementParser stmt = new PreparedStatementParser(sql);
-		
+
+		stmt.parse();
 		assertEquals(sql, stmt.parsedSql());
 	}
 	
@@ -27,6 +28,7 @@ public class NamedPreparedStatementParserTest {
 	public void beforeFormatTheFinalStatementCheckIfAllParametersAreSet() {
 		PreparedStatementParser stmt = new PreparedStatementParser(
 				"SELECT * FROM TABLE_NAME WHERE ID = :ID");
+		stmt.parse();
 		stmt.parsedSql();		
 	}
 
@@ -37,6 +39,7 @@ public class NamedPreparedStatementParserTest {
 				"SELECT * FROM TABLE_NAME WHERE ID = :ID");
 		stmt.setInteger("ID", 1);
 
+		stmt.parse();
 		assertEquals(parsedSql, stmt.parsedSql());
 	}
 
@@ -48,7 +51,8 @@ public class NamedPreparedStatementParserTest {
 		
 		stmt.setInteger("ID", 1);
 		stmt.setString("NAME", "Marcos");		
-		
+
+		stmt.parse();
 		assertEquals(parsedSql, stmt.parsedSql());
 	}
 
@@ -83,7 +87,8 @@ public class NamedPreparedStatementParserTest {
 				"SELECT * FROM TABLE_NAME WHERE COL1 = :PARAM1 OR COL2 = :PARAM2 OR COL3 = :PARAM1");
 		
 		stmt.setInteger("PARAM1", 1);
-		stmt.setString("PARAM2", "Marcos");		
+		stmt.setString("PARAM2", "Marcos");
+		stmt.parse();
 		
 		assertEquals(param1PairList, stmt.getParameterPositions("PARAM1"));
 		assertEquals(param2PairList, stmt.getParameterPositions("PARAM2"));
@@ -97,7 +102,8 @@ public class NamedPreparedStatementParserTest {
 		
 		stmt.setInteger("PARAM1", 1);
 		stmt.setString("PARAM2", "Marcos");
-
+		stmt.parse();
+		
 		stmt.parsedSql();
 		assertEquals(Arrays.asList(1, 3), stmt.getParameterIndexes("PARAM1"));
 		assertEquals(Arrays.asList(2), stmt.getParameterIndexes("PARAM2"));
@@ -109,6 +115,7 @@ public class NamedPreparedStatementParserTest {
 		PreparedStatementParser stmt = new PreparedStatementParser(
 				"SELECT * FROM TABLE_NAME WHERE ID IN (:IDS)");
 		stmt.setCollection("IDS", Arrays.asList("1", "2", "3", "4"));
+		stmt.parse();
 		
 		assertEquals(parsedSql, stmt.parsedSql());
 		assertEquals(Arrays.asList(1, 2, 3, 4), stmt.getParameterIndexes("IDS"));
@@ -121,6 +128,7 @@ public class NamedPreparedStatementParserTest {
 				"SELECT * FROM TABLE_NAME WHERE ID IN (:IDS) OR ID IN (:OTHER_IDS)");
 		stmt.setCollection("IDS", Arrays.asList("1", "2", "3", "4"));
 		stmt.setCollection("OTHER_IDS", Arrays.asList("5", "6", "7"));
+		stmt.parse();
 		
 		assertEquals(parsedSql, stmt.parsedSql());
 		assertEquals(Arrays.asList(1, 2, 3, 4), stmt.getParameterIndexes("IDS"));
@@ -134,6 +142,7 @@ public class NamedPreparedStatementParserTest {
 				"SELECT * FROM TABLE_NAME WHERE ID IN (:IDS) AND AGE >= :AGE");
 		stmt.setCollection("IDS", Arrays.asList("1", "2", "3", "4"));
 		stmt.setInteger("AGE", 10);
+		stmt.parse();
 		
 		assertEquals(parsedSql, stmt.parsedSql());
 		assertEquals(Arrays.asList(1, 2, 3, 4), stmt.getParameterIndexes("IDS"));
@@ -147,6 +156,7 @@ public class NamedPreparedStatementParserTest {
 				"SELECT * FROM TABLE_NAME WHERE AGE >= :AGE AND ID IN (:IDS)");
 		stmt.setCollection("IDS", Arrays.asList("1", "2", "3", "4"));
 		stmt.setInteger("AGE", 10);
+		stmt.parse();
 		
 		assertEquals(parsedSql, stmt.parsedSql());
 		assertEquals(Arrays.asList(2, 3, 4, 5), stmt.getParameterIndexes("IDS"));
@@ -159,7 +169,8 @@ public class NamedPreparedStatementParserTest {
 		PreparedStatementParser stmt = new PreparedStatementParser(
 				"SELECT * FROM TABLE_NAME WHERE ID IN (:IDS) OR ID IN (:IDS)");
 		stmt.setCollection("IDS", Arrays.asList("1", "2", "3", "4"));
-		
+		stmt.parse();
+
 		assertEquals(parsedSql, stmt.parsedSql());
 		assertEquals(Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8), stmt.getParameterIndexes("IDS"));
 	}
@@ -204,6 +215,7 @@ public class NamedPreparedStatementParserTest {
 		PreparedStatementParser stmt = 
 				new PreparedStatementParser("SELECT * FROM TBL WHERE NAME = '\"' AND AGE >= :AGE");
 		stmt.setInteger("AGE", 10);
+		stmt.parse();
 		
 		assertEquals(parsedSql, stmt.parsedSql());
 	}
@@ -214,6 +226,7 @@ public class NamedPreparedStatementParserTest {
 		PreparedStatementParser stmt = 
 				new PreparedStatementParser("SELECT * FROM TBL WHERE NAME = \"'\" AND AGE >= :AGE");
 		stmt.setInteger("AGE", 10);
+		stmt.parse();		
 		
 		assertEquals(parsedSql, stmt.parsedSql());
 	}
@@ -225,6 +238,7 @@ public class NamedPreparedStatementParserTest {
 				new PreparedStatementParser("SELECT * FROM TBL WHERE AGE = :AGE AND NAME = 'TEST");
 		stmt.setInteger("AGE", 10);
 		
+		stmt.parse();
 		assertEquals(parsedSql, stmt.parsedSql());
 	}
 	
@@ -235,6 +249,7 @@ public class NamedPreparedStatementParserTest {
 				new PreparedStatementParser("SELECT * FROM TBL WHERE AGE = :AGE AND NAME = \"TEST");
 		stmt.setInteger("AGE", 10);
 		
+		stmt.parse();		
 		assertEquals(parsedSql, stmt.parsedSql());
 	}
 }

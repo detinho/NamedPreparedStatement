@@ -22,11 +22,8 @@ public class PreparedStatementParser {
 		this.statement = statement;
 		parseStatement();
 	}
-	
+
 	public String parsedSql() {
-		checkParametersAreSet();
-		generateFinalStatement();
-		
 		return parsedStatement;
 	}
 	
@@ -38,6 +35,13 @@ public class PreparedStatementParser {
 		return parameterIndexes.get(parameterName);
 	}
 	
+	public void parse() {
+		checkParametersAreSet();
+		generateFinalStatement();
+		defineParameterIndexes();
+	}
+	
+	
 	private void checkParametersAreSet() {
 		for (String parameterName : parameters.keySet())
 			if (parameters.get(parameterName) == null)
@@ -45,27 +49,22 @@ public class PreparedStatementParser {
 	}
 	
 	private void generateFinalStatement() {
-		if (orderedParameterPositions.isEmpty()) {
+		if (thereAreNoParameters()) {
 			parsedStatement = statement;
 			return;
 		}
 		
 		parsedStatement = "";
-		int currentStatementIndex = 1;
 		int startIndex = 0;
 		int lastPositionEnd = -1;
+		
 		for (Position position : orderedParameterPositions) {
 			parsedStatement += statement.substring(startIndex, position.getStart());
 			if (parameters.get(position.getName()) instanceof Collection<?>) {
 				Collection<?> tempCollection = (Collection<?>)parameters.get(position.getName());
 				parsedStatement += repeatWithCommas("?", tempCollection.size());
-				
-				for (int i = 0; i < tempCollection.size(); i++)
-					parameterIndexes.put(position.getName(), currentStatementIndex++);
-				
 			} else {
 				parsedStatement += "?";
-				parameterIndexes.put(position.getName(), currentStatementIndex++);
 			}
 			startIndex = position.getEnd();
 			lastPositionEnd = position.getEnd();
@@ -73,8 +72,36 @@ public class PreparedStatementParser {
 		
 		if (lastPositionEnd != -1) {
 			String lastPartOfStatement = statement.substring(lastPositionEnd, statement.length());
-			if (!lastPartOfStatement.isEmpty() && !Character.isJavaIdentifierPart(lastPartOfStatement.charAt(0)))
+			if (!lastPartOfStatement.isEmpty() && !isValidChar(lastPartOfStatement.charAt(0)))
 				parsedStatement += lastPartOfStatement;
+		}
+	}
+
+	private boolean thereAreNoParameters() {
+		return orderedParameterPositions.isEmpty();
+	}
+	
+	private boolean isValidChar(char ch) {
+		return Character.isJavaIdentifierPart(ch);
+	}
+	
+	private void defineParameterIndexes() {
+		if (thereAreNoParameters()) {
+			return;
+		}
+		
+		int currentStatementIndex = 1;
+
+		for (Position position : orderedParameterPositions) {
+			if (parameters.get(position.getName()) instanceof Collection<?>) {
+				Collection<?> tempCollection = (Collection<?>)parameters.get(position.getName());
+				
+				for (int i = 0; i < tempCollection.size(); i++)
+					parameterIndexes.put(position.getName(), currentStatementIndex++);
+				
+			} else {
+				parameterIndexes.put(position.getName(), currentStatementIndex++);
+			}
 		}
 	}
 
@@ -91,10 +118,10 @@ public class PreparedStatementParser {
 			final char actualChar = statement.charAt(actualIndex);
 						
 			if (state == STATES.PARAMETER) {
-				if (Character.isJavaIdentifierPart(actualChar))
+				if (isValidChar(actualChar))
 					parameterName += actualChar;
 				
-				if (!(Character.isJavaIdentifierPart(actualChar)) || actualIndex == statement.length()-1) {
+				if (!(isValidChar(actualChar)) || actualIndex == statement.length()-1) {
 					parameterName = parameterName.trim();
 					
 					if (!parameterName.endsWith(String.valueOf(actualChar)))
