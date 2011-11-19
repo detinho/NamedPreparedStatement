@@ -11,7 +11,7 @@ public class PreparedStatementParser {
 	private final String statement;
 	private String parsedStatement = "";
 
-	enum STATES {NORMAL, PARAMETER};
+	enum STATES {NORMAL, PARAMETER, SINGLE_QUOTE, DOUBLE_QUOTE};
 	private STATES state;
 	private Map<String, Object> parameters = new HashMap<String, Object>();
 	private Map<String, List<Position>> parameterPositions = new HashMap<String, List<Position>>();
@@ -37,6 +37,11 @@ public class PreparedStatementParser {
 	}
 	
 	private void generateFinalStatement() {
+		if (orderedParameterPositions.isEmpty()) {
+			parsedStatement = statement;
+			return;
+		}
+		
 		parsedStatement = "";
 		int currentStatementIndex = 1;
 		int startIndex = 0;
@@ -105,11 +110,21 @@ public class PreparedStatementParser {
 					startPosition = -1;
 					endPosition = -1;
 				}
-			} else {
-				if (actualChar == ':') {
+			} else if (actualChar == ':') {
+				if (state == STATES.NORMAL) {
 					state = STATES.PARAMETER;
 					startPosition = actualIndex;
 				}
+			} else if (actualChar == '\'' && state != STATES.DOUBLE_QUOTE) {
+				if (state == STATES.SINGLE_QUOTE)
+					state = STATES.NORMAL;
+				else
+					state = STATES.SINGLE_QUOTE;
+			} else if (actualChar == '\"' && state != STATES.SINGLE_QUOTE) {
+				if (state == STATES.DOUBLE_QUOTE)
+					state = STATES.NORMAL;
+				else
+					state = STATES.DOUBLE_QUOTE;				
 			}
 			
 			actualIndex++;
@@ -131,6 +146,7 @@ public class PreparedStatementParser {
 	}
 
 	public void setInteger(String parameter, Integer value) {
+		checkIfParameterExists(parameter);
 		parameters.put(parameter, value);
 	}
 
@@ -139,6 +155,7 @@ public class PreparedStatementParser {
 	}
 
 	public void setString(String parameter, String value) {
+		checkIfParameterExists(parameter);
 		parameters.put(parameter, value);
 	}
 
@@ -147,9 +164,15 @@ public class PreparedStatementParser {
 	}
 
 	public void setCollection(String parameter, Collection<? extends Object> collection) {
+		checkIfParameterExists(parameter);
 		parameters.put(parameter, collection);
 	}
 	
+	private void checkIfParameterExists(String parameter) {
+		if (!parameters.containsKey(parameter))
+			throw new IllegalArgumentException("Parameter " + parameter + " does not exists.");
+	}
+
 	private String repeatWithCommas(String str, int times) {
 		String result = "";
 		for (int count = 1; count <= times; count++) {
