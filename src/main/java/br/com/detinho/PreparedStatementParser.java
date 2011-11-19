@@ -30,6 +30,14 @@ public class PreparedStatementParser {
 		return parsedStatement;
 	}
 	
+	public List<Position> getParameterPositions(String parameterName) {
+		return parameterPositions.get(parameterName);
+	}
+	
+	public List<Integer> getParameterIndexes(String parameterName) {
+		return parameterIndexes.get(parameterName);
+	}
+	
 	private void checkParametersAreSet() {
 		for (String parameterName : parameters.keySet())
 			if (parameters.get(parameterName) == null)
@@ -70,7 +78,7 @@ public class PreparedStatementParser {
 		}
 	}
 
-	public void parseStatement() {
+	private void parseStatement() {
 		int actualIndex = 0;
 		
 		int startPosition = -1;
@@ -166,13 +174,5 @@ public class PreparedStatementParser {
 				result += ",";
 		}
 		return result;
-	}
-
-	public List<Position> getParameterPositions(String parameterName) {
-		return parameterPositions.get(parameterName);
-	}
-
-	public List<Integer> getParameterIndexes(String parameterName) {
-		return parameterIndexes.get(parameterName);
 	}
 }
