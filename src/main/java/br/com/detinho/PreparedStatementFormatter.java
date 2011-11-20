@@ -6,12 +6,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static br.com.detinho.Util.isValidChar;
+
 public class PreparedStatementFormatter {
 
 	private final String statement;
 	private String parsedStatement = "";
 
-	enum STATES {NORMAL, PARAMETER, SINGLE_QUOTE, DOUBLE_QUOTE};
 	private Map<String, Object> parameters = new HashMap<String, Object>();
 	private List<Position> parameterPositions = new ArrayList<Position>();
 	private MapList<String, Integer> parameterIndexes = new MapList<String, Integer>();
@@ -27,10 +28,6 @@ public class PreparedStatementFormatter {
 	
 	public List<Integer> getParameterIndexes(String parameterName) {
 		return parameterIndexes.get(parameterName);
-	}
-	
-	public List<Position> getParameterPositions() {
-		return parameterPositions;
 	}
 	
 	public void parse() {
@@ -97,10 +94,6 @@ public class PreparedStatementFormatter {
 
 	private boolean thereAreNoParameters() {
 		return parameterPositions.isEmpty();
-	}
-	
-	private boolean isValidChar(char ch) {
-		return Character.isJavaIdentifierPart(ch);
 	}
 
 	private void parseStatement() {

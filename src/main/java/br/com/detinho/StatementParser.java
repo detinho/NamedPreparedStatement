@@ -5,7 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import br.com.detinho.PreparedStatementFormatter.STATES;
+import static br.com.detinho.Util.isValidChar;
 
 public class StatementParser {
 
@@ -17,6 +17,8 @@ public class StatementParser {
 	private int actualIndex;
 	private int startPosition;
 	private int endPosition;
+	
+	enum STATES {NORMAL, PARAMETER, SINGLE_QUOTE, DOUBLE_QUOTE};
 	private STATES state;
 
 	public StatementParser(String statement) {
@@ -97,10 +99,6 @@ public class StatementParser {
 		return actualIndex == statement.length()-1;
 	}
 	
-	private boolean isValidChar(char ch) {
-		return Character.isJavaIdentifierPart(ch);
-	}
-
 	private void putPosition(String parameterName, int startPosition,
 			int endPosition) {
 		Position position = Position.make(parameterName, startPosition, endPosition);

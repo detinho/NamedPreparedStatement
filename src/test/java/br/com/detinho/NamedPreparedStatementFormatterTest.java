@@ -160,14 +160,15 @@ public class NamedPreparedStatementFormatterTest {
 	
 	@Test
 	public void useTheSameCollectionParameterTwice() {
-		String parsedSql = "SELECT * FROM TABLE_NAME WHERE ID IN (?,?,?,?) OR ID IN (?,?,?,?)";
+		String parsedSql = "SELECT * FROM TABLE_NAME WHERE ID IN (?,?,?,?) OR NAME = ? OR ID IN (?,?,?,?)";
 		PreparedStatementFormatter stmt = new PreparedStatementFormatter(
-				"SELECT * FROM TABLE_NAME WHERE ID IN (:IDS) OR ID IN (:IDS)");
+				"SELECT * FROM TABLE_NAME WHERE ID IN (:IDS) OR NAME = :NAME OR ID IN (:IDS)");
 		stmt.setCollection("IDS", Arrays.asList("1", "2", "3", "4"));
+		stmt.setString("NAME", "MARCOS");
 		stmt.parse();
 
 		assertEquals(parsedSql, stmt.parsedSql());
-		assertEquals(Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8), stmt.getParameterIndexes("IDS"));
+		assertEquals(Arrays.asList(1, 2, 3, 4, 6, 7, 8, 9), stmt.getParameterIndexes("IDS"));
 	}
 
 	@Test(expected=IllegalArgumentException.class)
