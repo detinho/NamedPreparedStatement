@@ -104,12 +104,12 @@ public class PreparedStatementFormatter {
 		parameterPositions = parser.getParameterPositions();
 	}
 
-	public void setInteger(String parameter, Integer value) {
+	public void setInt(String parameter, Integer value) {
 		checkIfParameterExists(parameter);
 		parameters.put(parameter, value);
 	}
 
-	public Integer getInteger(String parameter) {
+	public Integer getInt(String parameter) {
 		return (Integer)parameters.get(parameter);
 	}
 

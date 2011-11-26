@@ -36,7 +36,7 @@ public class NamedPreparedStatementFormatterTest {
 		String parsedSql = "SELECT * FROM TABLE_NAME WHERE ID = ?";
 		PreparedStatementFormatter stmt = new PreparedStatementFormatter(
 				"SELECT * FROM TABLE_NAME WHERE ID = :ID");
-		stmt.setInteger("ID", 1);
+		stmt.setInt("ID", 1);
 
 		stmt.parse();
 		assertEquals(parsedSql, stmt.parsedSql());
@@ -48,7 +48,7 @@ public class NamedPreparedStatementFormatterTest {
 		PreparedStatementFormatter stmt = new PreparedStatementFormatter(
 				"SELECT * FROM TABLE_NAME WHERE ID = :ID OR NAME = :NAME");
 		
-		stmt.setInteger("ID", 1);
+		stmt.setInt("ID", 1);
 		stmt.setString("NAME", "Marcos");		
 
 		stmt.parse();
@@ -60,19 +60,19 @@ public class NamedPreparedStatementFormatterTest {
 		PreparedStatementFormatter stmt = new PreparedStatementFormatter(
 				"SELECT * FROM TABLE_NAME WHERE ID = :ID");
 		
-		stmt.setInteger("ID", 1);
+		stmt.setInt("ID", 1);
 		
-		assertEquals(new Integer(1), stmt.getInteger("ID"));
+		assertEquals(new Integer(1), stmt.getInt("ID"));
 	}
 
 	@Test
 	public void setTwoNamedParameters() {
 		PreparedStatementFormatter stmt = new PreparedStatementFormatter(
 				"SELECT * FROM TABLE_NAME WHERE ID = :ID OR  NAME = :NAME");
-		stmt.setInteger("ID", 1);
+		stmt.setInt("ID", 1);
 		stmt.setString("NAME", "Marcos");
 
-		assertEquals(new Integer(1), stmt.getInteger("ID"));
+		assertEquals(new Integer(1), stmt.getInt("ID"));
 		assertEquals("Marcos", stmt.getString("NAME"));
 	}
 
@@ -83,7 +83,7 @@ public class NamedPreparedStatementFormatterTest {
 		PreparedStatementFormatter stmt = new PreparedStatementFormatter(
 				"SELECT * FROM TABLE_NAME WHERE COL1 = :PARAM1 OR COL2 = :PARAM2 OR COL3 = :PARAM1");
 		
-		stmt.setInteger("PARAM1", 1);
+		stmt.setInt("PARAM1", 1);
 		stmt.setString("PARAM2", "Marcos");
 		stmt.parse();
 		
@@ -95,7 +95,7 @@ public class NamedPreparedStatementFormatterTest {
 		PreparedStatementFormatter stmt = new PreparedStatementFormatter(
 				"SELECT * FROM TABLE_NAME WHERE COL1 = :PARAM1 OR COL2 = :PARAM2 OR COL3 = :PARAM1");
 		
-		stmt.setInteger("PARAM1", 1);
+		stmt.setInt("PARAM1", 1);
 		stmt.setString("PARAM2", "Marcos");
 		stmt.parse();
 		
@@ -136,7 +136,7 @@ public class NamedPreparedStatementFormatterTest {
 		PreparedStatementFormatter stmt = new PreparedStatementFormatter(
 				"SELECT * FROM TABLE_NAME WHERE ID IN (:IDS) AND AGE >= :AGE");
 		stmt.setCollection("IDS", Arrays.asList("1", "2", "3", "4"));
-		stmt.setInteger("AGE", 10);
+		stmt.setInt("AGE", 10);
 		stmt.parse();
 		
 		assertEquals(parsedSql, stmt.parsedSql());
@@ -150,7 +150,7 @@ public class NamedPreparedStatementFormatterTest {
 		PreparedStatementFormatter stmt = new PreparedStatementFormatter(
 				"SELECT * FROM TABLE_NAME WHERE AGE >= :AGE AND ID IN (:IDS)");
 		stmt.setCollection("IDS", Arrays.asList("1", "2", "3", "4"));
-		stmt.setInteger("AGE", 10);
+		stmt.setInt("AGE", 10);
 		stmt.parse();
 		
 		assertEquals(parsedSql, stmt.parsedSql());
